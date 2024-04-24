@@ -504,6 +504,11 @@ bahia |>
   filter(category %in% c("NT","CR","EN")) |>
   select(family, Nome_Cientifico, category, CAA,AF, CER) |>
   mutate(across(CAA:CER,~ if_else(.x == 1, check, nocheck))) |>
+  mutate(Nome_Cientifico = if_else(Nome_Cientifico %in% c("Dasypops schirchi",
+                                                          "Cycloramphus migueli",
+                                                          "Bokermannohyla flavopicta"
+                                                          ),glue("{Nome_Cientifico}"),
+                                   glue("{Nome_Cientifico}<sup>&nbsp;BA</sup>"))) |>
   arrange(category,family) |>
   gt() |>
   fmt_markdown() |>
@@ -511,7 +516,7 @@ bahia |>
     title = "Grau de Ameaça dos Anuros da Bahia"
   ) |>
   tab_source_note(
-    source_note = md("Dados do pacote `amphiBR` com base na avaliação da portaria 300/2022 - MMA/Salve ICMBio")
+    source_note = md("Dados do pacote `amphiBR` com base na avaliação da portaria 300/2022 - MMA/Salve ICMBio<br><sup>BA</sup>Espécies constam na lista Estadual de ameaça - SEMA portaria 37/2017")
   ) |>
   data_color(
     columns = category,
@@ -554,7 +559,8 @@ bahia |>
       font = "Barlow Condensed",
       weight = "400",
       size = px(36),
-      style = "italic"
+      style = "italic",
+      align = "left"
         
     ),
     locations = cells_body(
@@ -585,7 +591,7 @@ bahia |>
   tab_style(
     cell_text(
       font = "Ubuntu",
-      size = px(14)
+      size = px(18)
     ),
     locations = cells_source_notes()
   )
