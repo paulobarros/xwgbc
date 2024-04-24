@@ -30,7 +30,7 @@ editor_options:
 ---
 
 
-# {{< fa triangle-exclamation >}} Disclaimer {background-color="white" background-image="images/bg1.png" background-size="contain" background-repeat="no-repeat"}
+# {{< fa triangle-exclamation >}} Disclaimer {background-color="white" background-image="images/bgaviso.png" background-size="contain" background-repeat="no-repeat"}
 
 ## 
 
