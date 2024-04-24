@@ -35,11 +35,13 @@ editor_options:
 ## 
 
 :::{.columns .v-center-container}
-:::{.column  width="50%"}
+:::{.column  width="30%"}
 [![](images/amphibr.png){width="400" fig-aligment="center"}](https://paulobarros.github.io/amphiBR/)
 :::
-:::{.column  width="50%"}
+:::{.column  width="70%"}
+[![](images/sbh.png){width="400" fig-aligment="center"}](https://sbherpetologia.org.br/lista-anfibios-sbh-copy)
 [![](images/salve.png){width="400" fig-aligment="center"}](https://salve.icmbio.gov.br/#/)
+[![](images/ran.png){width="200" fig-aligment="center"}](https://salve.icmbio.gov.br/#/)
 :::
 :::
 
@@ -783,9 +785,29 @@ Finalizados:
 
 ***Boana crepitans*** {{< fa caret-right>}} Variação intraespecífica (Paulo Barrros)
 
-***Bokermannohyla capra*** {{< fa caret-right>}} Esforço reprodutivo (Gessica Ramos)
+***Bokermannohyla capra*** {{< fa caret-right>}} Uso do ambiente, Esforço reprodutivo e comportamento (Gessica Ramos)
 
 **Comunidade de Anuros** {{< fa caret-right>}} Efeito de áreas protegidas na riqueza/diversidade (Marina Faraulo)
+
+***Scinax eurydice, Trachycephalys atlas, Dermatonotus mulleri, Leptodactylus payaya e Boana crepitans.*** {{< fa caret-right>}} Tolerância térmica em girinos (Marcos Oliveira)
+
+**Estrutura de comunidades de Girinos** {{< fa caret-right>}} FLONA Contendas (Jamille Freitas)
+
+
+
+
+:::
+:::
+
+## O que vem por aí ...
+
+
+:::{.columns .v-center-container}
+:::{.column  width="20%"}
+![](images/HerpLogo.png){width="300"}
+:::
+:::{.column  width="80%" .just-left}
+
 
 Em Andamento:
 
@@ -800,6 +822,7 @@ Em Andamento:
 
 :::
 :::
+
 
 ## Hora de vender meu peixe ...
 
