@@ -1,0 +1,4 @@
+project:
+  title: X-WGBC
+  type: website
+  output-dir: docs

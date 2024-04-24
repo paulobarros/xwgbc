@@ -1,0 +1,860 @@
+---
+title: "Desafios e perspectivas da biodiversidade dos Anuros das Caatingas da Bahia"
+bibliography: references.bib
+author:
+  - name: Paulo Barros
+    orcid: 0000-0001-9839-0796
+    email: pbarrosbio@gmail.com
+format: 
+  revealjs:
+    pointer:
+      pointerSize: 16
+    incremental: true
+    theme: [default,pbcss.scss]
+    footer: "X-WGBC: Desafios e perspectivas da biodiversidade dos Anuros das Caatingas da Bahia"
+    slide-number: c/t
+    transition: slide
+    width: 1920
+    height: 1080
+    title-slide-attributes: 
+      data-background-image: images/bg.png
+      data-background-size: contain
+    link-external-newwindow: true
+revealjs-plugins:
+  - pointer
+execute: 
+  echo: false
+  warning: false
+editor_options: 
+  chunk_output_type: console
+---
+
+
+# {{< fa triangle-exclamation >}} Disclaimer {background-color="white" background-image="images/bg1.png" background-size="contain" background-repeat="no-repeat"}
+
+## 
+
+:::{.columns .v-center-container}
+:::{.column  width="50%"}
+[![](images/amphibr.png){width="400" fig-aligment="center"}](https://paulobarros.github.io/amphiBR/)
+:::
+:::{.column  width="50%"}
+[![](images/salve.png){width="400" fig-aligment="center"}](https://salve.icmbio.gov.br/#/)
+:::
+:::
+
+# Let's crunch some numbers {background-color="white" background-image="images/numbers2.gif" background-size="200px" background-repeat="no-repeat" background-position="90% 20%"}
+
+## Brasil: um _hotspot_ global de biodiversidade de Anuros
+
+
+:::{.columns .v-center-container}
+:::{.column  width="30%"}
+![](images/br.png){width="400" fig-aligment="center"}
+:::
+:::{.column  width="20%" .card-center .cgreen}
+{{< fa frog size=4x >}} <br>
+<span class="huge">1144</span><br>
+<span style="font-size:60px">espécies^[Segalla _et al_ (2021)]</span><br>
+:::
+:::{.column  width="20%" .card-left .cgreenlime}
+{{< fa list size=4x >}} <br> <br>
+<span class="large">{{< fa caret-right >}} 20 famílias </span> <br>
+<span class="large">{{< fa caret-right >}} 107 gêneros </span>
+:::
+:::{.column  width="30%"}
+<span class="enormous">92<sup>%</sup></span><br>
+<span style="font-size:60px">AVALIADAS^[Portaria GM/MMA 300/2022 - SALVE ICMBio]</span>
+:::
+:::
+
+
+## Brasil: um _hotspot_ global de biodiversidade de Anuros
+
+
+:::{.columns .v-center-container}
+:::{.column  width="20%"}
+![](images/br.png){width="300" fig-aligment="center"}
+:::
+:::{.column  width="45%" }
+```{r}
+{
+  library(tidyverse)
+  library(amphiBR)
+  library(BRlist)
+  library(ggtext)
+  library(pdftools)
+  library(here)
+  library(glue)
+  library(gt)
+  library(ggVennDiagram)
+  library(ggvenn)
+  library(ggrepel)
+}
+anuros <- readRDS("data/anuros.RDS")
+
+cores <- c("#46B655","#F1F1F1", "#E53935","#61C9A3","#FFD600","#FF9100","#0D0D0D")
+
+levels <- anuros |>
+  mutate(category = case_when(Nome_Cientifico == "Boana cymbalum" ~ "EX",
+                              Nome_Cientifico == "Phrynomedusa fimbriata" ~ "EX",
+                              Nome_Cientifico == "Boana tepuiana" ~ "NA",
+                              .default = category)) |>
+  filter(!is.na(category) & category != "NA") |>
+  count(category) |>
+  arrange(desc(n)) |>
+  pull(category)
+
+anuros |>
+  mutate(category = case_when(Nome_Cientifico == "Boana cymbalum" ~ "EX",
+                               Nome_Cientifico == "Phrynomedusa fimbriata" ~ "EX",
+                               Nome_Cientifico == "Boana tepuiana" ~ "NA",
+                              .default = category)) |>
+  filter(!is.na(category) & category != "NA") |>
+  count(category) |>
+  arrange(desc(n)) |>
+  mutate(cat_label = c("Não Preocupante",
+                       "Dados Deficientes",
+                       "Criticamente Ameaçada",
+                       "Quase Ameaçada",
+                       "Vulnerável",
+                       "Ameaçada",
+                       "Extinta"), .before = category) |>
+  gt() |>
+  fmt_markdown() |>
+  tab_header(
+    title = "Classificação de Ameaça Anuros do Brasil"
+  ) |>
+  tab_source_note(
+    source_note = md("Dados do pacote `amphiBR` com base na avaliação da portaria 300/2022 - MMA/Salve ICMBio")
+  ) |>
+  data_color(
+    columns = category,
+    palette = cores,
+    target_columns = c(category,n),
+    method = "factor",
+    levels = levels,
+    alpha = 0.95
+     
+  ) |>
+  tab_options(table.font.names = "Barlow Condensed",
+              #heading.background.color = '#EEFBD1',
+              heading.title.font.size = px(40),
+              table.font.size = 36,
+              table.width = pct(100)) |>
+  cols_label(
+    cat_label = "Categoria",
+    category = "",
+    n = "N"
+  ) |>
+  tab_style(
+    cell_text(
+      weight = "bold"
+    ),
+    locations = list(cells_column_labels(), cells_title())
+  ) |>
+  tab_style(
+    cell_text(
+      weight = "bold",
+      font = "Panton Narrow-Trial",
+      size = px(36),
+      align = "center"
+    ),
+    locations = cells_body(
+      columns = category
+    )
+  ) |>
+  tab_style(
+    cell_text(
+      font = "Comfortaa",
+      weight = "700",
+      size = px(36)
+    ),
+    locations = cells_body(
+      columns = n
+    )
+  ) |>
+  tab_style(
+    cell_text(
+      font = "Comfortaa",
+      size = px(40)
+    ),
+    locations = cells_body(
+      columns = cat_label
+    )
+  ) |>
+  cols_width(
+    cat_label ~ pct(80),
+    category ~ pct(10),
+    n ~ pct(10)
+  ) |>
+  tab_style(
+    cell_text(
+      font = "Ubuntu",
+      size = px(14)
+    ),
+    locations = cells_source_notes()
+  )
+  
+```
+
+:::
+:::{.column  width="35%" .card-center}
+<span class="enormous" style="color: #EF3C3C">5<sup>%</sup></span><br>
+<span style="font-size:40px">EM ALGUMA CATEGORIA DE AMEAÇA^[Portaria GM/MMA 300/2022 - SALVE ICMBio]</span>
+<br><br>
+{{< fa skull size=2x >}} <br>
+{{< fa caret-right >}} *Phrynomedusa fimbriata*<br>
+{{< fa caret-right >}} *Boana cymbalum*
+:::
+:::
+
+
+
+## Anurofauna Bahiana
+
+
+:::{.columns .v-center-container}
+:::{.column  width="30%"}
+![](images/ba.png){width="400" fig-aligment="center"}
+:::
+:::{.column  width="20%" .card-center .cblue}
+{{< fa frog size=5x >}} <br>
+<span class="huge">199</span><br>
+<span style="font-size:60px">espécies^[SALVE ICMBio / `amphiBR`]</span><br>
+:::
+:::{.column  width="20%" .card-left .cred}
+{{< fa list size=5x >}} <br> <br>
+<span class="large">{{< fa caret-right >}} 17 famílias </span> <br>
+<span class="large">{{< fa caret-right >}} 51 gêneros </span>
+:::
+:::{.column  width="30%"}
+<span class="enormous">89<sup>%</sup></span><br>
+<span style="font-size:60px">AVALIADAS^[Portaria GM/MMA 300/2022 - SALVE ICMBio<br>Considerando as <b>222 spp</b> Napoli et al (p.c)]</span>
+:::
+:::
+
+## Anurofauna Bahiana
+
+
+:::{.columns .v-center-container}
+:::{.column  width="20%"}
+![](images/ba.png){width="400" fig-aligment="center"}
+:::
+:::{.column  width="45%"}
+```{r}
+library(fontawesome)
+
+bahia <- readRDS("data/bahia.RDS")
+
+bahia |>
+  count(family) |>
+  arrange(desc(n)) |>
+  slice(1:9) |>
+  mutate(perc = if_else(n > 20,
+                        glue("[round((n/199)*100,0)]% <span style='color: #17594A'>{{< fa star >}}</span>", .open = "[", .close = "]"),
+                        ""),
+         ) |>
+  bind_cols(bahia |>
+  count(family) |>
+  arrange(desc(n)) |>
+  slice(10:17) |>
+    mutate(perc = "") |>
+    bind_rows(tibble(family = NA, n = NA, perc = "")) |>
+    rename(family_2 = family, n2 = n, perc2 = perc)
+    ) |>
+  gt() |>
+  fmt_markdown() |>
+  tab_header(
+    title = "Anuros da Bahia",
+    subtitle = "Espécies por família"
+  ) |>
+  tab_source_note(
+    source_note = md("Dados do pacote `amphiBR` com base na avaliação da portaria 300/2022 - MMA/Salve ICMBio")
+  ) |>
+  data_color(
+    columns = family,
+    palette = c("#A5DD9B","#C5EBAA"),
+    target_columns = c(family, n, perc),
+    rows = 1:2,
+    method = "factor",
+    levels = c("Hylidae","Leptodactylidae"),
+    #alpha = 0.95
+    
+  ) |>
+  tab_options(table.font.names = "Barlow Condensed",
+              #heading.background.color = '#EEFBD1',
+              heading.title.font.size = px(32),
+              heading.subtitle.font.size = px(22)
+              ) |>
+  cols_label(
+    family = "Família",
+    n = "N",
+    perc = "",
+    family_2 = "Família",
+    n2 = "N",
+    perc2 = ""
+  
+  ) |>
+  tab_style(
+    cell_text(
+      weight = "bold",
+      font = "Barlow Condensed Semibold",
+      ),
+    locations = list(cells_title())
+  )|>
+  tab_style(
+    cell_text(
+      #weight = "bold",
+      font = "Barlow Condensed Medium",
+      size = px(30),
+      ),
+    locations = list(cells_column_labels())
+  )|>
+  tab_style(
+    cell_text(
+      #weight = "bold",
+      font = "Barlow Condensed Medium",
+      size = px(30),
+      ),
+    locations = list(cells_body(
+      column = perc
+    ))
+  )|>
+  tab_style(
+    cell_text(
+      font = "Comfortaa",
+      weight = "700",
+      size = px(30)
+    ),
+    locations = cells_body(
+      columns = c(n,n2)
+    )
+  ) |>
+  tab_style(
+    cell_text(
+      font = "Comfortaa",
+      size = px(30)
+    ),
+    locations = cells_body(
+      columns = c(family, family_2)
+    )
+  ) |>
+  tab_style(
+    cell_text(
+      font = "Comfortaa",
+      size = px(24)
+    ),
+    locations = cells_body(
+      columns = c(family,family_2)
+      #rows =  3:17
+    )
+  ) |>
+  cols_width(
+    family ~ pct(30),
+    family_2 ~ pct(30),
+    n ~ pct(10),
+    n2 ~ pct(10),
+    perc ~ pct(20),
+    perc2 ~ pct(0)
+  ) |>
+  tab_style(
+    cell_text(
+      font = "Ubuntu",
+      size = px(14)
+    ),
+    locations = cells_source_notes()
+  ) |>
+  sub_missing(
+    columns = c(family_2,n2),
+    missing_text = ""
+  )
+```
+
+:::
+
+:::{.column  width="35%"}
+
+<span class="enormous">19<sup>%</sup></span><br>
+<span style="font-size:60px">DA DIVERSIDADE DE ESPÉCIES DO BRASIL^[Considerando as <b>222 spp</b> Napoli et al (p.c, 2022)]</span>
+:::
+:::
+
+## Anurofauna Bahiana
+
+
+:::{.columns .v-center-container}
+:::{.column  width="15%"}
+![](images/ba.png){width="250" fig-aligment="center"}
+:::
+
+:::{.column  width="25%"}
+
+```{r}
+cores <- c("#46B655","#F1F1F1","#61C9A3", "#E53935","#FF9100")
+
+levels <- bahia |>
+  count(category) |>
+  arrange(desc(n)) |>
+  pull(category)
+
+bahia |>
+  count(category) |>
+  arrange(desc(n)) |>
+  mutate(cat_label = c("Não Preocupante",
+                       "Dados Deficientes",
+                       "Quase Ameaçada",
+                       "Criticamente Ameaçada",
+                       "Ameaçada"
+                       ), .before = category) |>
+  gt() |>
+  fmt_markdown() |>
+  tab_header(
+    title = "Grau de Ameaça dos Anuros da Bahia"
+  ) |>
+  tab_source_note(
+    source_note = md("Dados do pacote `amphiBR` com base na avaliação da portaria 300/2022 - MMA/Salve ICMBio")
+  ) |>
+  data_color(
+    columns = category,
+    palette = cores,
+    target_columns = c(category,n),
+    method = "factor",
+    levels = levels,
+    alpha = 0.95
+     
+  ) |>
+  tab_options(table.font.names = "Barlow Condensed",
+              #heading.background.color = '#EEFBD1',
+              heading.title.font.size = px(28),
+              table.font.size = 26,
+              table.width = pct(90)) |>
+  cols_label(
+    cat_label = "Categoria",
+    category = "",
+    n = "N"
+  ) |>
+  tab_style(
+    cell_text(
+      weight = "bold"
+    ),
+    locations = list(cells_column_labels(), cells_title())
+  ) |>
+  tab_style(
+    cell_text(
+      weight = "bold",
+      font = "Panton Narrow-Trial",
+      size = px(30),
+      align = "center"
+    ),
+    locations = cells_body(
+      columns = category
+    )
+  ) |>
+  tab_style(
+    cell_text(
+      font = "Comfortaa",
+      weight = "700",
+      size = px(30),
+      align = "center"
+    ),
+    locations = cells_body(
+      columns = n
+    )
+  ) |>
+  tab_style(
+    cell_text(
+      font = "Comfortaa",
+      size = px(26)
+    ),
+    locations = cells_body(
+      columns = cat_label
+    )
+  ) |>
+  cols_width(
+    cat_label ~ pct(70),
+    category ~ pct(15),
+    n ~ pct(15)
+  ) |>
+  tab_style(
+    cell_text(
+      font = "Ubuntu",
+      size = px(14)
+    ),
+    locations = cells_source_notes()
+  )
+```
+
+:::
+:::{.column  width="60%"}
+```{r}
+library(fontawesome)
+
+bahia <- readRDS("data/bahia.RDS")
+
+levels <- c("CR","EN","NT")
+cores <- c("#E53935","#FF9100","#61C9A3")
+
+check <- glue("<span style='color: #5DD669;'>{{< fa circle-check >}}</span>", .open = "[", .close = "]")
+nocheck <- glue("<span style='color: #E71B4E;'>{{< fa circle-xmark >}}</span>", .open = "[", .close = "]")
+
+bahia |>
+  filter(category %in% c("NT","CR","EN")) |>
+  select(family, Nome_Cientifico, category, CAA,AF, CER) |>
+  mutate(across(CAA:CER,~ if_else(.x == 1, check, nocheck))) |>
+  arrange(category,family) |>
+  gt() |>
+  fmt_markdown() |>
+  tab_header(
+    title = "Grau de Ameaça dos Anuros da Bahia"
+  ) |>
+  tab_source_note(
+    source_note = md("Dados do pacote `amphiBR` com base na avaliação da portaria 300/2022 - MMA/Salve ICMBio")
+  ) |>
+  data_color(
+    columns = category,
+    palette = cores,
+    target_columns = c(category),
+    method = "factor",
+    levels = levels,
+    alpha = 0.95
+    
+  ) |>
+  tab_options(table.font.names = "Barlow Condensed",
+              #heading.background.color = '#EEFBD1',
+              heading.title.font.size = px(40),
+              table.font.size = 36,
+              table.width = pct(100)) |>
+  cols_label(
+    family = "Família",
+    category = "",
+    Nome_Cientifico = "Espécie"
+  ) |>
+  tab_style(
+    cell_text(
+      weight = "bold"
+    ),
+    locations = list(cells_column_labels(), cells_title())
+  ) |>
+  tab_style(
+    cell_text(
+      weight = "bold",
+      font = "Panton Narrow-Trial",
+      size = px(36),
+      align = "center"
+    ),
+    locations = cells_body(
+      columns = category
+    )
+  ) |>
+  tab_style(
+    cell_text(
+      font = "Barlow Condensed",
+      weight = "400",
+      size = px(36),
+      style = "italic"
+        
+    ),
+    locations = cells_body(
+      columns = Nome_Cientifico
+    )
+  ) |>
+  
+  tab_style(
+    cell_text(
+      font = "Barlow Condensed",
+      weight = "600",
+      size = px(36)
+      
+      
+    ),
+    locations = cells_body(
+      columns = family
+    )
+  ) |>
+  cols_width(
+    family ~ pct(25),
+    Nome_Cientifico ~ pct(35),
+    category ~ pct(10),
+    CAA ~ pct(10),
+    AF ~ pct(10),
+    CER ~ pct(10),
+  ) |>
+  tab_style(
+    cell_text(
+      font = "Ubuntu",
+      size = px(14)
+    ),
+    locations = cells_source_notes()
+  )
+  
+```
+
+:::
+:::
+
+## Anurofauna Bahiana
+
+:::{.columns .v-center-container}
+:::{.column  width=""}
+![Distribuição das espécies por Biomas na Bahia^[SALVE ICMBio / `amphiBR`]](images/dist_bioma.png){width="700" fig-aligment="center"}
+:::
+:::{.column  width=""}
+![Distribuição das espécies por Biomas na Bahia segundo Napoli (2022)^[[Café com Ciência: Marcelo Napoli 2022](https://www.youtube.com/watch?v=smr-0m73RLM&t=2666s)]](images/napoli1.png){width="700" fig-aligment="center"}
+:::
+:::
+
+# Desafios nas pesquisas dos Anuros Catingueiros
+
+## Viéses históricos nas descrições de anfíbios no Brasil
+
+:::{.columns .v-center-container}
+:::{.column  width="40%"}
+![Espécies descritas no Brasil de 1768-2000 [@guerra2020]](images/guerra1.png){width=600}
+
+:::
+:::{.column  width="60%"}
+![Padrões históricos de descrição de espécies no Brasil [@guerra2020]](images/guerra2.png){width=1000}
+:::
+:::
+
+
+## _Gaps_ importantes de amostragem em áreas potenciais 
+:::{.columns .v-center-container}
+:::{.column  width="50%"}
+![Riqueza potencial de espécies de anfíbios da Caatinga [@garda2017]](images/caatinga_model.png){width=1000}
+:::
+:::{.column  width="50%" .just-left}
+
+* **2000 - Presente**
+  
+  + {{< fa circle-down >}} diversidade {{< fa caret-right >}} {{< fa circle-down >}} interesse
+  
+  + Grandes áreas da Caatinga nunca foram amostradas
+  
+  + Muitos aspectos da Ecologia da Caatinga ainda desconhecidos
+  
+  + Alguns grupos taxonomicamente complicados
+  
+  + **Áreas Ecotonais** ainda pouco estudadas
+  
+:::
+:::
+
+
+## Complexidade ecológica e climática das Caatingas
+
+:::{.columns .v-center-container}
+
+:::{.column  width="50%"}
+
+* **CAATINGA**
+
+  + Bioma, província, domínio, ecoregião e tipos de vegetação 
+  
+  + Ecologicamente e Evolutivamente Heterogênea:
+    
+    - *Seasonally dry tropical forest and woodland*
+    - *Savannas*
+    - *Tropical Rain Forests*
+    - *Rupestrian Grasslands*
+    
+  + {{< fa droplet >}} Baixa Disponibilidade de Água
+    
+    - Pressões seletivas limitantes da diversidade
+    - Endemismos ainda mais importantes
+  
+
+:::
+
+:::{.column  width="50%"}
+
+![Ecoregiões da Caatinga [@silva2017]](images/caatinga.png){width=800}
+
+:::
+
+:::
+
+
+## Uma eterna corrida contra o relógio
+
+![](images/nature1.png){.absolute width="800" top=60 right=50}
+
+:::{.columns .v-center-container}
+:::{.column  width="50%"}
+![Ameaças Emergentes a Anfíbios [@luedtke2023]](images/nature2.png){width=800}
+:::
+:::{.column  width="50%"}
+![Red List Index [@luedtke2023]](images/nature3.png){width=800}
+:::
+:::
+
+## Uma eterna corrida contra o relógio
+
+:::{.columns .v-center-container}
+:::{.column  width="60%"}
+
+* {{< fa earth-americas >}} 97% das áreas sazonais secas estão em risco iminente
+
+* 67% destes remanescentes encontram-se no Neotropico, com a **Caatinga sendo o maior remanescente**, e totalmente restrito ao Brasil
+
+* Caatinga: {{< fa circle-down >}} PIB do Brasil, altamente populosa, **de baixa prioridade de conservação** e sobre alta e constante pressão antropogênica
+
+* Maioria das áreas protegidas na Caatinga são **APA**s (Área de Proteção Ambiental), a categoria mais permissiva de classificação pelo SNUC
+
+
+:::
+:::{.column  width="40%"}
+![Áreas Protegidas na Caatinga [@teixeira2021]](images/caa_areas.png){width=650}
+:::
+:::
+
+
+## Uma eterna corrida contra o relógio
+
+![](images/procera_paper.png){width="800" .absolute top=20 right=0}
+
+:::{.columns .v-center-container}
+
+:::{.column  width="50%"}
+![](images/procera.jpeg){.fragment width="700"}
+![](images/procera_iucn.png){.fragment width="700"}
+
+:::
+
+:::{.column  width="50%"}
+
+![Distribuição de _Proceratophrys sanctaritae_ [@almeida2022]](images/mapa_procera.png){width="800" }
+
+![](images/mara_18.png){.fragment width="900" .absolute top=100 left=10}
+
+![](images/mara_22.png){ .fragment width="900" .absolute top=100 left=10}
+
+:::
+
+:::
+
+## Áreas de Proteção FUNCIONAM!
+
+![](images/poster1.png){width="1000" .absolute top=20 right=20}
+
+:::{.columns .v-center-container}
+:::{.column  width="40%"}
+![](images/poster2.png){width="700"}
+:::
+:::{.column  width="60%"}
+<br><br><br>
+![](images/poster3.png){width="900"}
+:::
+:::
+
+
+# LABHERPETO - UESB {background-color="white" background-image="images/HerpLogo.png" background-size="300px" background-repeat="no-repeat" background-position="90% 20%"}
+
+
+## Explorando as Caatingas da Bahia
+
+
+:::{.columns .v-center-container}
+:::{.column  width="30%"}
+![Dra. Juliana Zina <br> Coordenadora LABHERPETO <br> <em>"La Jefa"</em>](images/zina.png){width="300"}
+:::
+:::{.column  width="70%" .just-left}
+
+**Biologia Reprodutiva** (*Boana crepitans* [@nascimento2015biologia], *Physalaemus kroyeri* [@gally2013]), **Morfologia** (*Ceratophrys aurita* [@demira-mendes2022]), **Distribuição** (*Leptodactylus caatingae* [@novaeszina2016]), **Inventários** (Brejo Novo, Jequié - BA [@silva2013]), **Bioacústica** (*Scinax camposseabrai* [@novaes2016]), **Dieta** (*Phyllodytes tuberculosus* [@oliveira2021]), **Ecologia de Estradas** [@bastos2019]
+
+:::
+:::
+
+## O que vem por aí ...
+
+
+:::{.columns .v-center-container}
+:::{.column  width="20%"}
+![](images/HerpLogo.png){width="300"}
+:::
+:::{.column  width="80%" .just-left}
+
+Finalizados:
+
+***Phyllomedusa bahiana*** {{< fa caret-right>}} Variação morfológica em gradientes ambientais (Deivson Fraga)
+
+***Rhinella sp*** {{< fa caret-right>}} Zonas de hibridização (Ana Paula)
+
+***Boana crepitans*** {{< fa caret-right>}} Variação intraespecífica (Paulo Barrros)
+
+***Bokermannohyla capra*** {{< fa caret-right>}} Esforço reprodutivo (Gessica Ramos)
+
+**Comunidade de Anuros** {{< fa caret-right>}} Efeito de áreas protegidas na riqueza/diversidade (Marina Faraulo)
+
+Em Andamento:
+
+***Ceratophrys aurita*** {{< fa caret-right>}} Citogenética (Alice Barreto)
+
+***Proceratophrys criaticeps, Rhinella granulosa, Dermatonotus muelleri, Physalaemus albifrons e P. cicada, Leptodactylus caatingae e L. troglodytes*** {{< fa caret-right>}} Investimento Reprodutivo (Natália Nascimento)
+
+**Ecologia de Estradas** {{< fa caret-right>}} Vertebrados Atropelados BR-026 (Gustavo Abreu)
+
+
+
+
+:::
+:::
+
+## Hora de vender meu peixe ...
+
+
+:::{.columns .v-center-container}
+:::{.column  width="30%"}
+![](images/amphibr.png){width="400"}
+:::
+:::{.column  width="70%" .just-left}
+
+[{{< fa link >}} paulobarros.github.io/amphiBR](https://paulobarros.github.io/amphiBR/){target="_blank"}
+
+<br>
+
+```{r}
+#| eval: false
+#| echo: true
+
+devtools::install_github('paulobarros/amphiBR')
+```
+
+<br>
+
+Pacote R com dataset da publicação oficial da **Lista de Anfíbios do Brasil** publicada pela Sociedade Brasileira de Herpetologia.
+
+<br>
+O pacote atualmente conta também com informações sobre o **status de conservação**, nome comum, **ocorrências por estado da federação**, endemismo e **ocorrências por biomas**. Todas obtidas através da última avaliação do MMA (2022) sobre os anfíbios do Brasil. Também incluímos no pacote informações do **Brazilian Tadpole Database** (Provete et al., 2012), com informações sobre as espécies que atualmente possuem a descrição dos girinos.
+
+
+
+
+
+:::
+:::
+
+
+## Obrigado!
+
+:::{.columns .v-center-container}
+:::{.column  width="40%"}
+![](images/pb.png){width="500" fig-aligment="center"}
+
+{{< fa envelope >}} pbarrosbio@gmail.com
+
+{{< fa brands twitter >}} \@pbarrosjr
+
+{{< fa at >}} \@pbarrosjr.bsky.social
+
+{{< fa brands github >}} github.com/paulobarros
+
+:::
+:::{.column  width="60%"}
+![](images/thanks.png){width="1000" fig-aligment="center"}
+
+:::
+::: 
+
+## Referências
